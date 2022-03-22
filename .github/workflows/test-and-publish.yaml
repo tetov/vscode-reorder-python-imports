@@ -1,4 +1,4 @@
-name: 'Run tests'
+name: Run tests and publish on new tag
 
 on:
     - push
@@ -16,9 +16,6 @@ jobs:
 
         name: Test on ${{ matrix.os }}
         steps:
-            # to be able to run using act cli medium image
-            #- run: sudo apt update && sudo apt install xvfb -y
-       
             - uses: actions/checkout@v3
 
             - uses: actions/setup-node@v2
@@ -53,3 +50,9 @@ jobs:
             - name: run tests on windows/mac
               run: npm test
               if: runner.os != 'Linux'
+
+            - name: Publish to extension marketplace when new tag is pushed
+              if: matrix.os == 'ubuntu-latest' && startswith(github.ref, 'refs/tags/v')
+              run: npm run deploy
+              env:
+                  VSCE_PAT: ${{ secrets.VSCE_PAT }}
